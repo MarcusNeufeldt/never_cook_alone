@@ -173,22 +173,22 @@ export default function RecipeGallery({ initialCategory }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row gap-2 items-center w-full">
-        <div className="relative flex-grow min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+      <div className="flex flex-row gap-4 items-center w-full">
+        <div className="relative flex-grow min-w-0 group">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors duration-200" size={20} />
           <Input
             type="search"
             placeholder="Search recipes..."
-            className="pl-10 pr-4 w-full"
+            className="pl-10 pr-4 w-full focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 shadow-sm hover:shadow-md"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => setViewMode(value as 'grid' | 'list')} className="flex-shrink-0">
-          <ToggleGroupItem value="grid" aria-label="Grid view">
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => setViewMode(value as 'grid' | 'list')} className="flex-shrink-0 bg-background p-1 rounded-lg border">
+          <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3 py-2 rounded-md data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
             <Grid className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="list" aria-label="List view">
+          <ToggleGroupItem value="list" aria-label="List view" className="px-3 py-2 rounded-md data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
             <List className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
@@ -200,7 +200,7 @@ export default function RecipeGallery({ initialCategory }: Props) {
             variant={selectedCategory === null ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setSelectedCategory(null)}
-            className="flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex-shrink-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
           >
             All
           </Button>
@@ -210,31 +210,48 @@ export default function RecipeGallery({ initialCategory }: Props) {
               variant={selectedCategory === category.id ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setSelectedCategory(category.id)}
-              className="flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="flex-shrink-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
             >
               {category.name}
             </Button>
           ))}
         </div>
-        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="horizontal" className="h-2" />
       </ScrollArea>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="aspect-square rounded-lg overflow-hidden">
-              <Skeleton className="w-full h-full" />
+            <div key={i} className="aspect-square rounded-xl overflow-hidden relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 animate-pulse">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+              </div>
             </div>
           ))}
         </div>
       ) : filteredRecipes.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">No recipes found</p>
+        <div className="text-center py-12 space-y-3">
+          <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+            <Search className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">No recipes found</p>
           {searchQuery && (
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Try adjusting your search or filters
             </p>
           )}
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              setSearchQuery('')
+              setSelectedCategory(null)
+            }}
+          >
+            Clear Filters
+          </Button>
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in fade-in-50 duration-500">
@@ -248,18 +265,19 @@ export default function RecipeGallery({ initialCategory }: Props) {
                 viewTransitionName: `recipe-card-${recipe.id}`
               }}
             >
-              <div className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
-                <Image
-                  src={recipe.image_url || '/placeholder.svg?height=300&width=300'}
-                  alt={recipe.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-all duration-500 ease-out group-hover:scale-105 md:group-hover:scale-105 scale-100"
-                />
-                <div 
-                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent 
-                           opacity-80 transition-opacity duration-300 md:opacity-80 md:group-hover:opacity-100"
-                />
+            <div className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 ease-out transform hover:-translate-y-1">
+              <Image
+                src={recipe.image_url || '/placeholder.svg?height=300&width=300'}
+                alt={recipe.name}
+                layout="fill"
+                objectFit="cover"
+                className="transition-all duration-500 ease-out group-hover:scale-105"
+              />
+              <div 
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent 
+                           opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+              />
+              <div className="absolute inset-0 border border-white/10 rounded-xl group-hover:border-white/20 transition-all duration-300" />
                 <div className="absolute inset-0 p-4 flex flex-col justify-end transform transition-transform duration-300 ease-out">
                   <div className="flex gap-2 mb-2 transform md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-300 delay-100 translate-y-0 opacity-100">
                     {recipe.cook_time_minutes && (
@@ -301,7 +319,7 @@ export default function RecipeGallery({ initialCategory }: Props) {
         <div className="space-y-4">
           {filteredRecipes.map((recipe) => (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200 relative group">
+              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200 relative group border border-transparent hover:border-gray-300">
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <Image
                     src={recipe.image_url || '/placeholder.svg?height=80&width=80'}
