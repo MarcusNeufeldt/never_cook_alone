@@ -16,6 +16,10 @@ export default function FeaturedRecipe() {
 
   useEffect(() => {
     fetchFeaturedRecipe()
+    
+    // Refresh the featured recipe every 60 seconds
+    const interval = setInterval(fetchFeaturedRecipe, 60000)
+    return () => clearInterval(interval)
   }, [])
 
   async function fetchFeaturedRecipe() {
@@ -25,7 +29,6 @@ export default function FeaturedRecipe() {
         .from('recipes')
         .select('*')
         .eq('is_featured', true)
-        .limit(10) // Get up to 10 featured recipes
         .order('created_at', { ascending: false })
 
       if (error) throw error
